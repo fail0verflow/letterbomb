@@ -14,3 +14,6 @@ then complain that it doesn't work.
 This does not include the HackMii Installer bundle. Those files would go
 in `bundle/`.
 
+### License
+
+GPL-2.0
