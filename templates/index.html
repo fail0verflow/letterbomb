@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>LetterBomb</title>
+	<link rel="stylesheet" type="text/css" href="/static/mac.css" />
+	<script type="text/javascript">
+		captcha_passed = false;
+		function keyHandler(e, obj, next) {
+			if (window.event) { // IE
+				keynum = e.keyCode;
+			} else if(e.which) { // sane browsers 
+				keynum = e.which;
+			}
+			if (keynum == 0x08 || keynum == 0x09 || (keynum >= 96 && keynum <= 105))
+				return true;
+			keychar = String.fromCharCode(keynum);
+			if (keychar.match(/[0-9A-F]/) == null) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+		function check() {
+			var ids = ["a","b","c","d","e","f"];
+			for (var i = 0; i < 6; i++) {
+				var val = document.getElementById(ids[i]).value;
+				if (val.match(/[0-9a-fA-F][0-9a-fA-F]/) == null) {
+					return false;
+				}
+			}
+			return captcha_passed;
+		}
+		function update() {
+			var ok = check();
+			document.getElementById('submit_btn').disabled = !ok;
+			document.getElementById('submit_btn2').disabled = !ok;
+		}
+		function doNext(obj, next) {
+			if (obj.value.length == 2 && next != null) {
+				document.getElementById(next).value = '';
+				document.getElementById(next).focus();
+			}
+			update();
+		}
+		function captcha_ok() {
+			captcha_passed = true;
+			update();
+		}
+		function captcha_expired() {
+			captcha_passed = false;
+			update();
+		}
+	</script>
+</head>
+<body>
+<img src='/static/letterbomb_icon.png' style="margin-bottom: -30px;"/>
+<h1>LetterBomb</h1>
+<form method="POST" action="{{ url_for('haxx') }}">
+	<p>
+		<h2>System Menu Version</h2>
+		<input type='radio' name='region' value='U' {% if region=='U' %}checked{% endif %}>4.3U
+		<input type='radio' name='region' value='E' {% if region=='E' %}checked{% endif %}>4.3E
+		<input type='radio' name='region' value='J' {% if region=='J' %}checked{% endif %}>4.3J
+		<input type='radio' name='region' value='K' {% if region=='K' %}checked{% endif %}>4.3K
+	</p>
+
+	<p>
+		<h2>MAC Address</h2>
+		<input type='text' maxlength='2' size='2' name='a' id='a' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'b');" placeholder='AA' />
+		<input type='text' maxlength='2' size='2' name='b' id='b' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'c');" placeholder='BB' />
+		<input type='text' maxlength='2' size='2' name='c' id='c' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'd');" placeholder='CC' />
+		<input type='text' maxlength='2' size='2' name='d' id='d' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'e');" placeholder='DD' />
+		<input type='text' maxlength='2' size='2' name='e' id='e' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'f');" placeholder='EE' />
+		<input type='text' maxlength='2' size='2' name='f' id='f' class='box' onkeydown="return keyHandler(event);" onkeyup="update();" placeholder='FF' />
+		<br />Necessary to create and sign the correct file
+	</p>
+	<p>
+		<input type='checkbox' name='bundle' value='1' checked /> <b>Bundle the HackMii Installer for me!</b>
+	</p>
+	<div style="float: center; display: inline-block;" class="recaptcha">
+		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+		<div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_PUBLICKEY }}" data-callback="captcha_ok" data-expired-callback="captcha_expired"></div>
+	</div>
+{% if error %}
+	<div style="color: red; font-weight: bold; font-size: 18pt;">{{ error }}</div>
+{% endif %}
+	<div style="color: red; font-weight: bold; font-size: 18pt;" id="nojs">You must have JavaScript enabled to use this site.</div>
+	<script>document.getElementById("nojs").style.display = "none";</script>
+	<p>
+		<input type='submit' value='Cut the red wire' id='submit_btn' class='button buttonr' disabled /> <input type='submit' value='Cut the blue wire' id='submit_btn2' class='button buttonb' disabled />
+	</p>
+</form>
+</body>
+</html>
+

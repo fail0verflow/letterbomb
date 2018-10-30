@@ -1,0 +1,57 @@
+body {
+	font: 1.0em "Trebuchet MS", Verdana, Arial, sans-serif;
+	text-align:center;
+}
+
+input.button {
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  
+	-moz-box-shadow: 2px 2px 3px #666;
+	-webkit-box-shadow: 2px 2px 3px #666;
+	box-shadow: 2px 2px 3px #666;
+
+	font-size: 20px;  
+	padding: 4px 7px;  
+	outline: 0;
+	-webkit-appearance: none;
+
+	text-align:center;
+}
+
+input.buttonr:enabled {
+	border-color:red;
+}
+input.buttonb:enabled {
+   border-color:blue;
+}
+
+input.box {
+  border: 1px solid #ccc;
+  
+	text-transform:uppercase;
+ 
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  
+	-moz-box-shadow: 2px 2px 3px #666;
+	-webkit-box-shadow: 2px 2px 3px #666;
+	box-shadow: 2px 2px 3px #666;
+  
+	font-size: 20px;  
+	padding: 4px 7px;  
+	outline: 0;
+	-webkit-appearance: none;
+
+	text-align:center;
+}
+
+input.box:focus {
+	border-color: #339933;
+}
+
+h2 {
+   margin-bottom: 0;
+}

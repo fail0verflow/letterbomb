@@ -1,0 +1,11 @@
+.*
+!.gitignore
+log/*
+!log/.keep
+bundle/*
+!bundle/.keep
+*.pyc
+tmp
+*.old
+config.py
+
