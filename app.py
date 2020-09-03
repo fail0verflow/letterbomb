@@ -1,4 +1,4 @@
-import os, zipfile, hashlib, hmac, struct, logging, urllib, random, json
+import os, zipfile, hashlib, hmac, struct, logging, urllib, random, json, binascii
 from io import StringIO
 import geoip2.database
 from logging.handlers import SMTPHandler
@@ -132,7 +132,7 @@ def captcha_check():
 @app.route("/haxx", methods=["POST"])
 def haxx():
     OUI_LIST = [
-        bytearray.fromhex(i).decode()
+        binascii.unhexlify(i)
         for i in open(os.path.join(app.root_path, "oui_list.txt")).read().split("\n")
         if len(i) == 6
     ]
