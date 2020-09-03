@@ -131,8 +131,10 @@ def captcha_check():
 
 @app.route("/haxx", methods=["POST"])
 def haxx():
+   
     OUI_LIST = [
-        binascii.unhexlify(i)
+        binascii.unhexlify(i) 
+        print(i)
         for i in open(os.path.join(app.root_path, "oui_list.txt")).read().split("\n")
         if len(i) == 6
     ]
