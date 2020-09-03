@@ -131,13 +131,13 @@ def captcha_check():
 
 @app.route("/haxx", methods=["POST"])
 def haxx():
-   
+
     OUI_LIST = [
-        binascii.unhexlify(i) 
-        print(i)
+        binascii.unhexlify(i)
         for i in open(os.path.join(app.root_path, "oui_list.txt")).read().split("\n")
         if len(i) == 6
     ]
+    print(OUI_LIST)
     g.recaptcha_args = "k=%s" % app.config["RECAPTCHA_PUBLICKEY"]
     dt = datetime.utcnow() - timedelta(1)
     delta = dt - datetime(2000, 1, 1)
