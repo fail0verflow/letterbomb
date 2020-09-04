@@ -1,6 +1,7 @@
 import os, zipfile, hashlib, hmac, struct, logging, urllib, random, json, binascii
-from io import StringIO
+from io import BytesIO
 import geoip2.database
+import requests
 from logging.handlers import SMTPHandler
 from datetime import datetime, timedelta
 from flask import Flask, request, g, render_template, make_response, redirect, url_for
@@ -97,29 +98,21 @@ def index():
 
 def captcha_check():
     try:
-        oform = {
-            # "privatekey": app.config['RECAPTCHA_PRIVATEKEY'],
-            "secret": app.config["RECAPTCHA_PRIVATEKEY"],
-            "remoteip": request.remote_addr,
-            # "challenge": request.form.get('recaptcha_challenge_field',['']),
-            # "response": request.form.get('recaptcha_response_field',[''])
+        payload = {
             "response": request.form.get("g-recaptcha-response", [""]),
+            "secret": app.config["RECAPTCHA_PRIVATEKEY"],
         }
-
-        # f = urllib.urlopen("http://api-verify.recaptcha.net/verify", urllib.urlencode(oform))
-        f = urllib.urlopen(
-            "https://www.google.com/recaptcha/api/siteverify", urllib.urlencode(oform)
+        response = requests.post(
+            "https://www.google.com/recaptcha/api/siteverify", payload
         )
-
         # result = f.readline().replace("\n","")
         # error = f.readline().replace("\n","")
-        d = json.load(f)
-        result = d["success"]
-        f.close()
+        response_text = json.loads(response.text)
+        result = response_text["success"]
 
         if not result:  #  != 'true':
             # if error != 'incorrect-captcha-sol':
-            app.logger.info("ReCaptcha fail: %r, %r", oform, d)
+            app.logger.info("ReCaptcha fail: %r, %r", payload, result)
             # g.recaptcha_args += "&error=" + error
             return False
 
@@ -137,7 +130,6 @@ def haxx():
         for i in open(os.path.join(app.root_path, "oui_list.txt")).read().split("\n")
         if len(i) == 6
     ]
-    print(OUI_LIST)
     g.recaptcha_args = "k=%s" % app.config["RECAPTCHA_PUBLICKEY"]
     dt = datetime.utcnow() - timedelta(1)
     delta = dt - datetime(2000, 1, 1)
@@ -162,30 +154,34 @@ def haxx():
         )
         return _index("If you're using Dolphin, try File->Open instead ;-).")
 
-    if not any([mac.startswith(i) for i in OUI_LIST]):
-        app.logger.info(
-            "Bad MAC %s at %d ver %s bundle %r",
-            mac.encode("hex"),
-            timestamp,
-            request.form["region"],
-            bundle,
-        )
-        return _index("The exploit will only work if you enter your Wii's MAC address.")
-
-    key = hashlib.sha1(mac + "\x75\x79\x79").digest()
+    if not any:
+        for i in OUI_LIST:
+            if i == mac:
+                app.logger.info(
+                    "Bad MAC %s at %d ver %s bundle %r",
+                    mac.encode("hex"),
+                    timestamp,
+                    request.form["region"],
+                    bundle,
+                )
+                return _index(
+                    "The exploit will only work if you enter your Wii's MAC address."
+                )
+    mac = bytes(mac, "utf-8")
+    key = hashlib.sha1(mac + bytes("\x75\x79\x79", "utf-8")).digest()
 
     blob = bytearray(open(os.path.join(app.root_path, template), "rb").read())
     blob[0x08:0x10] = key[:8]
-    blob[0xB0:0xC4] = "\x00" * 20
+    blob[0xB0:0xC4] = b"\x00" * 20
     blob[0x7C:0x80] = struct.pack(">I", timestamp)
-    blob[0x80:0x8A] = "%010d" % timestamp
-    blob[0xB0:0xC4] = hmac.new(key[8:], str(blob), hashlib.sha1).digest()
+    blob[0x80:0x8A] = bytes("%010d" % timestamp, "utf-8")
+    blob[0xB0:0xC4] = hmac.new(key[8:], blob, hashlib.sha1).digest()
 
     path = (
         "private/wii/title/HAEA/%s/%s/%04d/%02d/%02d/%02d/%02d/HABA_#1/txt/%08X.000"
         % (
-            key[:4].encode("hex").upper(),
-            key[4:8].encode("hex").upper(),
+            binascii.hexlify(key[:4]).upper(),
+            binascii.hexlify(key[4:8]).upper(),
             dt.year,
             dt.month - 1,
             dt.day,
@@ -195,7 +191,7 @@ def haxx():
         )
     )
 
-    zipdata = StringIO.StringIO()
+    zipdata = BytesIO()
     zip = zipfile.ZipFile(zipdata, "w")
     zip.writestr(path, str(blob))
     BUNDLE = [
@@ -210,7 +206,7 @@ def haxx():
 
     app.logger.info(
         "LetterBombed %s at %d ver %s bundle %r",
-        mac.encode("hex"),
+        binascii.hexlify(mac),
         timestamp,
         request.form["region"],
         bundle,
