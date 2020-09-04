@@ -101,6 +101,7 @@ def captcha_check():
         payload = {
             "response": request.form.get("g-recaptcha-response", [""]),
             "secret": app.config["RECAPTCHA_PRIVATEKEY"],
+            "remoteip": request.remote_addr,
         }
         response = requests.post(
             "https://www.google.com/recaptcha/api/siteverify", payload
@@ -126,7 +127,7 @@ def captcha_check():
 def haxx():
 
     OUI_LIST = [
-        binascii.unhexlify(i)
+        bytes.fromhex(i)
         for i in open(os.path.join(app.root_path, "oui_list.txt")).read().split("\n")
         if len(i) == 6
     ]
@@ -136,7 +137,7 @@ def haxx():
     timestamp = delta.days * 86400 + delta.seconds
 
     try:
-        mac = "".join([chr(int(request.form[i], 16)) for i in "abcdef"])
+        mac = bytes(int(request.form[i], 16) for i in "abcdef")
         template = TEMPLATES[request.form["region"]]
         bundle = "bundle" in request.form
     except:
@@ -144,37 +145,35 @@ def haxx():
     if not captcha_check():
         return _index("Are you a human?")
 
-    if mac == "\x00\x17\xab\x99\x99\x99":
+    if mac == b"\x00\x17\xab\x99\x99\x99":
         app.logger.info(
             "Derp MAC %s at %d ver %s bundle %r",
-            mac.encode("hex"),
+            mac.hex(),
             timestamp,
             request.form["region"],
             bundle,
         )
         return _index("If you're using Dolphin, try File->Open instead ;-).")
 
-    if not any:
-        for i in OUI_LIST:
-            if i == mac:
-                app.logger.info(
-                    "Bad MAC %s at %d ver %s bundle %r",
-                    mac.encode("hex"),
-                    timestamp,
-                    request.form["region"],
-                    bundle,
-                )
-                return _index(
-                    "The exploit will only work if you enter your Wii's MAC address."
-                )
-    mac = bytes(mac, "utf-8")
+    for i in OUI_LIST:
+        if i == mac:
+            app.logger.info(
+                "Bad MAC %s at %d ver %s bundle %r",
+                mac.hex(),
+                timestamp,
+                request.form["region"],
+                bundle,
+            )
+            return _index(
+                "The exploit will only work if you enter your Wii's MAC address."
+            )
     key = hashlib.sha1(mac + bytes("\x75\x79\x79", "utf-8")).digest()
 
     blob = bytearray(open(os.path.join(app.root_path, template), "rb").read())
     blob[0x08:0x10] = key[:8]
     blob[0xB0:0xC4] = b"\x00" * 20
     blob[0x7C:0x80] = struct.pack(">I", timestamp)
-    blob[0x80:0x8A] = bytes("%010d" % timestamp, "utf-8")
+    blob[0x80:0x8A] = b"%010d" % timestamp
     blob[0xB0:0xC4] = hmac.new(key[8:], blob, hashlib.sha1).digest()
 
     path = (
