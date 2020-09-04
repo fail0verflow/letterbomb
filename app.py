@@ -179,8 +179,8 @@ def haxx():
     path = (
         "private/wii/title/HAEA/%s/%s/%04d/%02d/%02d/%02d/%02d/HABA_#1/txt/%08X.000"
         % (
-            binascii.hexlify(key[:4]).upper(),
-            binascii.hexlify(key[4:8]).upper(),
+            key[:4].hex().upper(),
+            key[4:8].hex().upper(),
             dt.year,
             dt.month - 1,
             dt.day,
