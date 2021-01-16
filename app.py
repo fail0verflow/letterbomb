@@ -1,4 +1,4 @@
-import os, zipfile, hashlib, hmac, struct, logging, urllib, random, json, binascii
+import os, zipfile, hashlib, hmac, struct, logging, urllib, random, json
 from io import BytesIO
 import geoip2.database
 import requests
@@ -192,7 +192,7 @@ def haxx():
 
     zipdata = BytesIO()
     zip = zipfile.ZipFile(zipdata, "w")
-    zip.writestr(path, str(blob))
+    zip.writestr(path, blob)
     BUNDLE = [
         (name, os.path.join(BUNDLEBASE, name))
         for name in os.listdir(BUNDLEBASE)
@@ -205,7 +205,7 @@ def haxx():
 
     app.logger.info(
         "LetterBombed %s at %d ver %s bundle %r",
-        binascii.hexlify(mac),
+        mac.hex(),
         timestamp,
         request.form["region"],
         bundle,
