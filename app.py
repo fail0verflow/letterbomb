@@ -155,18 +155,16 @@ def haxx():
         )
         return _index("If you're using Dolphin, try File->Open instead ;-).")
 
-    for i in OUI_LIST:
-        if i == mac:
-            app.logger.info(
-                "Bad MAC %s at %d ver %s bundle %r",
-                mac.hex(),
-                timestamp,
-                request.form["region"],
-                bundle,
-            )
-            return _index(
-                "The exploit will only work if you enter your Wii's MAC address."
-            )
+    if not any(mac.startswith(i) for i in OUI_LIST):
+        app.logger.info(
+            "Bad MAC %s at %d ver %s bundle %r",
+            mac.hex(),
+            timestamp,
+            request.form["region"],
+            bundle,
+        )
+        return _index("The exploit will only work if you enter your Wii's MAC address.")
+
     key = hashlib.sha1(mac + bytes("\x75\x79\x79", "utf-8")).digest()
 
     blob = bytearray(open(os.path.join(app.root_path, template), "rb").read())
