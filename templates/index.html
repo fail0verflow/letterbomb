@@ -56,15 +56,15 @@
 <img src='/static/letterbomb_icon.png' style="margin-bottom: -30px;"/>
 <h1>LetterBomb</h1>
 <form method="POST" action="{{ url_for('haxx') }}">
-	<p>
+	<div>
 		<h2>System Menu Version</h2>
 		<input type='radio' name='region' value='U' {% if region=='U' %}checked{% endif %}>4.3U
 		<input type='radio' name='region' value='E' {% if region=='E' %}checked{% endif %}>4.3E
 		<input type='radio' name='region' value='J' {% if region=='J' %}checked{% endif %}>4.3J
 		<input type='radio' name='region' value='K' {% if region=='K' %}checked{% endif %}>4.3K
-	</p>
+	</div>
 
-	<p>
+	<div>
 		<h2>MAC Address</h2>
 		<input type='text' maxlength='2' size='2' name='a' id='a' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'b');" placeholder='AA' />
 		<input type='text' maxlength='2' size='2' name='b' id='b' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'c');" placeholder='BB' />
@@ -73,7 +73,7 @@
 		<input type='text' maxlength='2' size='2' name='e' id='e' class='box' onkeydown="return keyHandler(event);" onkeyup="doNext(this, 'f');" placeholder='EE' />
 		<input type='text' maxlength='2' size='2' name='f' id='f' class='box' onkeydown="return keyHandler(event);" onkeyup="update();" placeholder='FF' />
 		<br />Necessary to create and sign the correct file
-	</p>
+	</div>
 	<p>
 		<input type='checkbox' name='bundle' value='1' checked /> <b>Bundle the HackMii Installer for me!</b>
 	</p>
