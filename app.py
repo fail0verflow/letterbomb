@@ -1,7 +1,7 @@
 import os, zipfile, hashlib, hmac, struct, logging, random, json
 import urllib
 from io import BytesIO
-import geoip2.database
+import geoip2.database, geoip2.errors
 from logging.handlers import SMTPHandler
 from datetime import datetime, timedelta
 from flask import Flask, request, g, render_template, make_response, redirect, url_for
@@ -54,6 +54,8 @@ def region():
         country = gi.country(request.remote_addr).country.iso_code
         app.logger.info("GI: %s -> %s", request.remote_addr, country)
         return COUNTRY_REGIONS.get(country, 'E')
+    except geoip2.errors.AddressNotFoundError:
+        return 'E'
     except:
         app.logger.exception("GeoIP exception")
         return 'E'
