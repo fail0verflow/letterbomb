@@ -1,7 +1,6 @@
 import os, zipfile, hashlib, hmac, struct, logging, random, json
 import urllib
 from io import BytesIO
-import geoip2.database, geoip2.errors
 from logging.handlers import SMTPHandler
 from datetime import datetime, timedelta
 from flask import Flask, request, g, render_template, make_response, redirect, url_for
@@ -17,14 +16,13 @@ TEMPLATES = {
 }
 
 BUNDLEBASE = os.path.join(app.root_path, 'bundle')
-#BUNDLE = [(name, os.path.join(BUNDLEBASE,name)) for name in os.listdir(BUNDLEBASE)]
-
-#OUI_LIST = [i.decode('hex') for i in open(os.path.join(app.root_path, 'oui_list.txt')).read().split("\n") if len(i)==6]
-
 COUNTRY_REGIONS = dict([l.split(" ") for l in open(os.path.join(app.root_path, 'country_regions.txt')).read().split("\n") if l])
 
-#gi = pygeoip.GeoIP(os.path.join(app.root_path, 'GeoIP.dat'))
-gi = geoip2.database.Reader('/usr/share/GeoIP/GeoLite2-Country.mmdb')
+try:
+    import geoip2.database, geoip2.errors
+    gi = geoip2.database.Reader('/usr/share/GeoIP/GeoLite2-Country.mmdb')
+except ImportError:
+    gi = None
 
 class RequestFormatter(logging.Formatter):
     def format(self, record):
@@ -50,6 +48,8 @@ if not app.debug:
     app.logger.warning('Starting...')
 
 def region():
+    if gi is None:
+        return 'E'
     try:
         country = gi.country(request.remote_addr).country.iso_code
         app.logger.info("GI: %s -> %s", request.remote_addr, country)
